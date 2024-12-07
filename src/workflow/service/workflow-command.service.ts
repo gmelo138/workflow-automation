@@ -41,7 +41,6 @@ export class WorkflowCommandService {
       throw new Error('Workflow not found');
     }
 
-    // to understand
     if (data.trigger || data.name) {
       const domain = new WorkflowDomain(
         data.name ?? existing.name,
@@ -97,7 +96,7 @@ export class WorkflowCommandService {
 
     if (!workflowEntity) {
       this.logger.warn(`Workflow not found: ${id}`);
-      return null; // returns null when workflow has not been found
+      return null; 
     }
 
     return WorkflowDto.fromEntity(workflowEntity);

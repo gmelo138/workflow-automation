@@ -1,4 +1,3 @@
-// src/workflow/action/types/log-message.action.ts
 import {
   IAction,
   ActionContext,

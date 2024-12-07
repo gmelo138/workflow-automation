@@ -1,4 +1,3 @@
-// src/workflow/action/interfaces/action.interface.ts
 export interface IAction {
   type: string;
   execute(context: ActionContext): Promise<ActionResult>;

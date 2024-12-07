@@ -25,9 +25,8 @@ export class WorkflowStateService {
       JSON.stringify(state),
       'EX',
       3600,
-    ); // 1hr TTL 
+    ); 
 
-    // Updates the 'lastExecutionState' field on database
     await this.workflowRepository.updateWorkflow(workflowId, {
       lastExecutionState: state,
     });

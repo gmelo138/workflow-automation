@@ -16,7 +16,7 @@ import { connection } from './database';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: () => connection(), // uses its central configs
+      useFactory: () => connection(),
     }),
     TypeOrmModule.forFeature([WorkflowEntity]),
     BullModule.registerQueue({
@@ -36,12 +36,12 @@ import { connection } from './database';
   ],
   controllers: [WorkflowController],
   providers: [
-    WorkflowRepository, // database
-    WorkflowStateService, // Redis
-    WorkflowCommandService, // command logic
-    WorkflowExecutionService, // execution logic
-    WorkflowProcessor, // Bull consumer
-    TriggerProducer, // Cron and events
+    WorkflowRepository, 
+    WorkflowStateService,
+    WorkflowCommandService,
+    WorkflowExecutionService,
+    WorkflowProcessor, 
+    TriggerProducer, 
   ],
   exports: [WorkflowCommandService, WorkflowExecutionService],
 })

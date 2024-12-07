@@ -116,7 +116,7 @@ class MockCreateWorkflowDto extends CreateWorkflowDto {
             expect(repository.findById).toHaveBeenCalledWith('1');
             expect(repository.updateWorkflow).toHaveBeenCalledWith('1', {
               name: 'Updated Workflow',
-              trigger: { type: 'time-based', params: {} }, // Updated expectation
+              trigger: { type: 'time-based', params: {} }, 
             });
             expect(result).toBeInstanceOf(WorkflowDto);
             expect(result.name).toBe('Updated Workflow');

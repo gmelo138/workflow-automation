@@ -1,4 +1,3 @@
-// src/workflow/action/factory/action.factory.ts
 import { IAction } from '../interfaces/action.interface';
 import { LogMessageAction } from 'src/workflow/types';
 import { HttpRequestAction } from '../types/http-request.action';

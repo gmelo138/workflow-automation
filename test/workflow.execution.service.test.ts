@@ -6,7 +6,6 @@ import { getQueueToken } from '@nestjs/bull';
 import { WorkflowDto } from '../src/workflow/dto';
 import * as ActionFactory from '../src/workflow/factory/action.factory';
 
-// Mocking the action factory
 jest.mock('../src/workflow/factory/action.factory', () => ({
   getActionInstance: jest.fn(),
 }));
@@ -51,7 +50,6 @@ describe('WorkflowExecutionService', () => {
 
     service = module.get<WorkflowExecutionService>(WorkflowExecutionService);
 
-    // Default behavior for the action factory
     (ActionFactory.getActionInstance as jest.Mock).mockImplementation((type) => {
       return {
         execute: jest.fn().mockResolvedValue({ success: true }),

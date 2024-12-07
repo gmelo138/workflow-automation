@@ -10,7 +10,7 @@ import { getActionInstance } from '../factory';
 @Injectable()
 export class WorkflowExecutionService {
   private readonly logger = new Logger(WorkflowExecutionService.name);
-  private readonly MAX_STEPS = 5; // max steps limit
+  private readonly MAX_STEPS = 5; 
 
   constructor(
     private readonly workflowStateService: WorkflowStateService,
@@ -21,8 +21,6 @@ export class WorkflowExecutionService {
   async enqueueWorkflow(workflowId: string): Promise<void> {
     this.logger.log(`Adding workflow to queue: ${workflowId}`);
 
-    // setting up 5 retrys with exp. backoff
-    // after each retry, there shall be a progressive delay starting at 5s
     await this.workflowQueue.add(
       'execute-workflow',
       { workflowId },
@@ -30,10 +28,10 @@ export class WorkflowExecutionService {
         attempts: 5,
         backoff: {
           type: 'exponential',
-          delay: 5000, // first retry after 5s, the next one shall take longer
+          delay: 5000,
         },
-        removeOnComplete: true, // optional, clean completed jobs from the queue
-        removeOnFail: false, // optional, keep failure history
+        removeOnComplete: true,
+        removeOnFail: false, 
       },
     );
   }
@@ -65,7 +63,6 @@ export class WorkflowExecutionService {
         return;
       }
 
-      // checks if the steps limit was reach
       if (currentState.step >= this.MAX_STEPS) {
         this.logger.log(
           `Workflow ${workflowId} reached the maximum step limit (${this.MAX_STEPS}). Completing.`,
@@ -150,8 +147,6 @@ export class WorkflowExecutionService {
       error.stack,
     );
 
-    // Throws an error so Bull can detect the failure and 
-    // trigger the retry mechanism
     throw error;
   }
 }

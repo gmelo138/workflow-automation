@@ -4,7 +4,7 @@ module.exports = {
     '^.+\\.ts$': 'ts-jest',
   },
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/src/$1', // Mapeia "src/*" para o Jest
+    '^src/(.*)$': '<rootDir>/src/$1', 
   },
   testMatch: ['<rootDir>/test/**/*.spec.ts', '<rootDir>/test/**/*.test.ts'],
   testEnvironment: 'node',

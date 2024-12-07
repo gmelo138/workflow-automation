@@ -13,14 +13,11 @@ async function bootstrap() {
   app.enableCors();
   app.use(json({ limit: '50mb' }));
 
-  // Swagger setup
   new SwaggerConfig().setup(app);
 
-  // Bull Board setup
   const serverAdapter = new ExpressAdapter();
   serverAdapter.setBasePath('/admin/queues');
 
-  // Use the queue already registered in the BullModule
   const workflowQueue = app.get<Queue>(getQueueToken('workflow-queue'));
 
   createBullBoard({
@@ -30,7 +27,6 @@ async function bootstrap() {
 
   app.use('/admin/queues', serverAdapter.getRouter());
 
-  // Start the application
   await app.listen(3000, () => {
     console.log('Application running on http://localhost:3000');
     console.log('Bull Board running on http://localhost:3000/admin/queues');

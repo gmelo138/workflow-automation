@@ -1,4 +1,3 @@
-// src/workflow/action/types/http-request.action.ts
 import {
   IAction,
   ActionContext,

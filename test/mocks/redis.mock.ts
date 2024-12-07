@@ -9,6 +9,4 @@ export class RedisMock {
     this.store[key] = value;
     return 'OK';
   }
-
-  // Add other methods as needed
 }

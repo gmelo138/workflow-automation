@@ -14,7 +14,6 @@ export class WorkflowEntity {
   @Column()
   name: string;
 
-  // Trigger pode ser um JSON guardando tipo e parâmetros
   @Column({ type: 'jsonb' })
   trigger: {
     type: string;

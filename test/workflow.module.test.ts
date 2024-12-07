@@ -49,11 +49,9 @@ describe('WorkflowStateService', () => {
 
     await workflowStateService.updateExecutionState(workflowId, state);
 
-    // Check if Redis was updated
     const redisState = await redisMock.get(`workflow:${workflowId}:state`);
     expect(JSON.parse(redisState)).toEqual(state);
 
-    // Check if repository was updated
     expect(workflowRepositoryMock.updateWorkflow).toHaveBeenCalledWith(workflowId, {
       lastExecutionState: state,
     });
@@ -63,7 +61,6 @@ describe('WorkflowStateService', () => {
     const workflowId = 'test-id';
     const state = { status: 'completed' };
 
-    // Set up initial state in Redis
     await redisMock.set(`workflow:${workflowId}:state`, JSON.stringify(state));
 
     const fetchedState = await workflowStateService.getExecutionState(workflowId);
