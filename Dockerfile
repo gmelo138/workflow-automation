@@ -1,20 +1,20 @@
-# Use a versão oficial do Node.js
+# Use the official Node.js image
 FROM node:22
 
-# Defina o diretório de trabalho na imagem
+# Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Copie apenas os arquivos necessários para instalar as dependências
+# Copy only the package.json and package-lock.json files
 COPY package*.json ./
 
-# Instale as dependências
+# Install the dependencies
 RUN npm install
 
-# Copie todo o código da aplicação
+# Copy the rest of the application code
 COPY . .
 
-# Exponha a porta usada pela aplicação
+# Expose the application port
 EXPOSE 3000
 
-# Instrução padrão ao rodar a aplicação (alterada para ser manual neste caso)
-CMD ["npm", "run", "start:dev"]
+# Command to run the application
+CMD ["npm", "run", "start"]
