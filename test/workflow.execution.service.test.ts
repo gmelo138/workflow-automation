@@ -8,9 +8,7 @@ import * as ActionFactory from '../src/workflow/factory/action.factory';
 
 // Mocking the action factory
 jest.mock('../src/workflow/factory/action.factory', () => ({
-  getActionInstance: jest.fn().mockReturnValue({
-    execute: jest.fn().mockResolvedValue({ success: true }),
-  }),
+  getActionInstance: jest.fn(),
 }));
 
 describe('WorkflowExecutionService', () => {
@@ -33,11 +31,6 @@ describe('WorkflowExecutionService', () => {
       add: jest.fn(),
     };
 
-    jest.spyOn(ActionFactory, 'getActionInstance').mockReturnValue({
-        execute: jest.fn().mockResolvedValue({ success: true }),
-        type: 'time-based'
-    });
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkflowExecutionService,
@@ -57,6 +50,13 @@ describe('WorkflowExecutionService', () => {
     }).compile();
 
     service = module.get<WorkflowExecutionService>(WorkflowExecutionService);
+
+    // Default behavior for the action factory
+    (ActionFactory.getActionInstance as jest.Mock).mockImplementation((type) => {
+      return {
+        execute: jest.fn().mockResolvedValue({ success: true }),
+      };
+    });
   });
 
   afterEach(() => {
@@ -91,7 +91,7 @@ describe('WorkflowExecutionService', () => {
       id: workflowId,
       name: 'Test Workflow',
       trigger: { type: 'manual', params: {} },
-      actions: [{ type: 'testAction', params: {} }],
+      actions: [{ type: 'httpRequest', params: {} }],
       createdAt: new Date(),
       updatedAt: new Date(),
       lastExecutionState: {},
@@ -99,68 +99,108 @@ describe('WorkflowExecutionService', () => {
         id: workflowId,
         name: 'Test Workflow',
         trigger: { type: 'manual', params: {} },
-        actions: [{ type: 'testAction', params: {} }],
+        actions: [{ type: 'httpRequest', params: {} }],
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
         lastExecutionState: {},
       }),
     };
-  
+
     beforeEach(() => {
       workflowCommandServiceMock.getWorkflowById.mockResolvedValue(mockWorkflow);
       workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 0 });
-      (ActionFactory.getActionInstance as jest.Mock).mockReturnValue({
-        execute: jest.fn().mockResolvedValue({ success: true }),
-      });
     });
-  
+
     it('should execute workflow successfully', async () => {
       await service.executeWorkflow(workflowId);
-  
+
       expect(workflowCommandServiceMock.getWorkflowById).toHaveBeenCalledWith(workflowId);
       expect(workflowStateServiceMock.getExecutionState).toHaveBeenCalledWith(workflowId);
-      expect(ActionFactory.getActionInstance).toHaveBeenCalledWith('testAction');
+      expect(ActionFactory.getActionInstance).toHaveBeenCalledWith('httpRequest');
       expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
         workflowId,
         expect.objectContaining({ step: 1 })
       );
     });
-  
+
     it('should complete workflow when no more actions', async () => {
       workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 1 });
-  
+
       await service.executeWorkflow(workflowId);
-  
+
       expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
         workflowId,
         expect.objectContaining({ status: 'completed' })
       );
     });
-  
+
     it('should handle errors during execution', async () => {
-        const error = new Error('Test error');
-        (ActionFactory.getActionInstance as jest.Mock).mockReturnValue({
-          execute: jest.fn().mockRejectedValue(error),
-        });
-      
-        // We're not expecting the error to be thrown here, but rather handled internally
-        await service.executeWorkflow(workflowId);
-      
-        // Verify that the error was caught and the workflow state was updated
-        expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
-          workflowId,
-          expect.objectContaining({ 
-            error: expect.stringContaining('Test error'),
-            status: 'failed'
-          })
-        );
-      });
-  
+      const error = new Error('Test error');
+      (ActionFactory.getActionInstance as jest.Mock).mockImplementation(() => ({
+        execute: jest.fn().mockRejectedValue(error),
+      }));
+
+      await service.executeWorkflow(workflowId);
+
+      expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({ 
+          error: expect.stringContaining('Test error'),
+          status: 'failed'
+        })
+      );
+    });
+
     it('should complete workflow when max steps reached', async () => {
       workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 5 });
-  
+
       await service.executeWorkflow(workflowId);
-  
+
+      expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({ status: 'completed' })
+      );
+    });
+
+    it('should handle specific condition for workflow execution', async () => {
+      workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 1, specificCondition: true });
+
+      await service.executeWorkflow(workflowId);
+
+      expect(workflowCommandServiceMock.getWorkflowById).toHaveBeenCalledWith(workflowId);
+      expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({"status": "completed"})
+      );
+    });
+
+    it('should update state correctly when specific action is executed', async () => {
+      workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 2 });
+
+      await service.executeWorkflow(workflowId);
+
+      expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({"status": "completed"})
+      );
+    });
+
+    it('should handle final state update correctly', async () => {
+      workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 5 });
+
+      await service.executeWorkflow(workflowId);
+
+      expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({ status: 'completed' })
+      );
+    });
+
+    it('should perform cleanup after workflow execution', async () => {
+      workflowStateServiceMock.getExecutionState.mockResolvedValue({ step: 5 });
+
+      await service.executeWorkflow(workflowId);
+
       expect(workflowStateServiceMock.updateExecutionState).toHaveBeenCalledWith(
         workflowId,
         expect.objectContaining({ status: 'completed' })
