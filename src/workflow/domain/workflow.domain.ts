@@ -6,6 +6,10 @@ export class WorkflowDomain {
     name: string,
     trigger: { type: string; params: Record<string, any> },
   ) {
+    if (!name || name.trim().length === 0) {
+      throw new Error('Name must be provided and cannot be empty');
+    }
+
     this.name = name;
     this.trigger = trigger;
     this.validate();

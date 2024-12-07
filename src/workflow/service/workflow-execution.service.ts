@@ -82,7 +82,11 @@ export class WorkflowExecutionService {
         currentState,
       );
     } catch (error) {
-      await this.handleError(error, workflowId, currentState);
+      this.logger.error(`Error while processing workflow: ${workflowId}`, error.stack);
+      await this.workflowStateService.updateExecutionState(workflowId, { 
+        error: error.message,
+        status: 'failed'
+      });
     }
   }
 
